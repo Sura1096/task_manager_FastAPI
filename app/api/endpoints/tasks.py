@@ -69,13 +69,15 @@ async def add_task(
 
 @tasks_route.put(
     '/update_task',
-    response_model=Any[TaskResponse | None, HTTPException]
+    response_model=TaskResponse
 )
 async def update_task(
         data: TaskUpdateSchema,
-        cur_user: str = Depends(get_user_from_token)
+        cur_user: str = Depends(get_user_from_token),
+        users_service: UsersService = Depends(get_users_service),
+        task_service: TasksService = Depends(get_task_service)
 ):
-    user = await get_user_from_db(cur_user)
+    user = await users_service.get_user(cur_user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -83,7 +85,15 @@ async def update_task(
             headers={'WWW-Authenticate': 'Bearer'}
         )
     else:
-        return await update_task_db(user.user_id, data)
+        task_exists = await task_service.get_task(data.task_id)
+        if task_exists:
+            await task_service.update_task(user.user_id, data)
+            return await task_service.get_task(data.task_id)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='Task not found.'
+            )
 
 
 @tasks_route.delete('/{task_id}', response_model=Any[None, HTTPException])
