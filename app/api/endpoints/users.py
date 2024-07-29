@@ -31,8 +31,9 @@ async def register_user(user: UserSchema, users_service: UsersService = Depends(
 
 
 @auth_user_route.post('/login/')
-async def login(user: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user_in_db = await get_user_from_db(user.username)
+async def login(user: Annotated[OAuth2PasswordRequestForm, Depends()],
+                users_service: UsersService = Depends(get_users_service)):
+    user_in_db = await users_service.get_user(user.username)
     if not user_in_db or user_in_db.password != user.password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
