@@ -16,6 +16,10 @@ tasks_route = APIRouter(
 )
 
 
+async def get_task_service(uow: IUnitOfWork = Depends(UnitOfWork)) -> TasksService:
+    return TasksService(uow)
+
+
 @tasks_route.get(
     '/{task_id}',
     response_model=Any[TaskResponse | None, HTTPException]
