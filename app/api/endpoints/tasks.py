@@ -1,7 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from typing import Any
-
 from app.api.schemas.task import TaskCreateSchema, TaskUpdateSchema, TaskResponse
 from app.core.security import get_user_from_token
 from app.api.endpoints.tasks_methods import get_task_db, insert_task_db, update_task_db, delete_task_db
