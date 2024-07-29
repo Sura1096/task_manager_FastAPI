@@ -96,9 +96,13 @@ async def update_task(
             )
 
 
-@tasks_route.delete('/{task_id}', response_model=Any[None, HTTPException])
-async def remove_task(task_id: int, cur_user: str = Depends(get_user_from_token)):
-    user = await get_user_from_db(cur_user)
+@tasks_route.delete('/delete_task/{task_id}')
+async def remove_task(
+        task_id: int, cur_user: str = Depends(get_user_from_token),
+        users_service: UsersService = Depends(get_users_service),
+        task_service: TasksService = Depends(get_task_service)
+):
+    user = await users_service.get_user(cur_user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -106,4 +110,12 @@ async def remove_task(task_id: int, cur_user: str = Depends(get_user_from_token)
             headers={'WWW-Authenticate': 'Bearer'}
         )
     else:
-        return await delete_task_db(task_id)
+        task_exists = await task_service.get_task(task_id)
+        if task_exists:
+            await task_service.delete_task(task_id)
+            return {'message': 'Task successfully deleted.'}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='Task not found.'
+            )
