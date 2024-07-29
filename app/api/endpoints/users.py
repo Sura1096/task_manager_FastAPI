@@ -17,11 +17,15 @@ auth_user_route = APIRouter(
 )
 
 
-@auth_user_route.post('/register/', response_model=Any[UserResponse | None, HTTPException])
-async def register_user(user: UserSchema):
-    user_in_db = await get_user_from_db(user.username)
+async def get_users_service(uow: IUnitOfWork = Depends(UnitOfWork)) -> UsersService:
+    return UsersService(uow)
+
+
+@auth_user_route.post('/register/', response_model=UserResponse)
+async def register_user(user: UserSchema, users_service: UsersService = Depends(get_users_service)):
+    user_in_db = await users_service.get_user(user.username)
     if not user_in_db:
-        return await insert_user_db(user)
+        return await users_service.insert_user(user)
     else:
         raise HTTPException(status_code=409, detail='User with that username already exists.')
 
