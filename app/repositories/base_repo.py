@@ -70,7 +70,6 @@ class TasksRepo(TasksAbstractRepo):
     async def insert_task_db(self, data: dict):
         stmt = insert(self.model).values(**data)
         await self.session.execute(stmt)
-        return await self.get_task_db(data["task_id"])
 
     async def update_task_db(self, data: dict):
         stmt = update(self.model).where(and_(
@@ -82,9 +81,7 @@ class TasksRepo(TasksAbstractRepo):
             status=data["status"]
         )
         await self.session.execute(stmt)
-        return await self.get_task_db(data["task_id"])
 
     async def delete_task_db(self, task_id: int):
         stmt = delete(self.model).where(self.model.task_id == task_id)
         await self.session.execute(stmt)
-        return await self.get_task_db(task_id)
