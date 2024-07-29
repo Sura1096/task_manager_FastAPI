@@ -1,9 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
+from app.api.endpoints.users import get_users_service
 from app.api.schemas.task import TaskCreateSchema, TaskUpdateSchema, TaskResponse
+
 from app.core.security import get_user_from_token
-from app.api.endpoints.tasks_methods import get_task_db, insert_task_db, update_task_db, delete_task_db
-from app.api.endpoints.users_methods import get_user_from_db
+
+from app.services.task_manager_service import TasksService
+from app.services.task_manager_service import UsersService
+
+from app.utils.unitofwork import IUnitOfWork, UnitOfWork
 
 
 tasks_route = APIRouter(
