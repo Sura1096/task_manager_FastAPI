@@ -88,7 +88,7 @@
 - `POST /auth/login/`: Аутентификация и получение JWT токена;
 - `GET /tasks/get_task/{task_id}/`: Получение информации о задаче по его id;
 - `POST /tasks/add_task/`: Добаление новой задачи;
-- `PUT /tasks/update_task/`: Обновление ифнормации задачи;
+- `PUT /tasks/update_task/`: Обновление информации задачи;
 - `DELETE /tasks/delete_task/{task_id}/`: Удаление задачи по его id.
 
 
