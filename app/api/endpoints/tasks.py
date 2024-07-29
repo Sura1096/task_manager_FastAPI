@@ -48,15 +48,14 @@ async def get_task_by_id(
             )
 
 
-@tasks_route.post(
-    '/add_task',
-    response_model=Any[TaskResponse | None, HTTPException]
-)
+@tasks_route.post('/add_task')
 async def add_task(
         data: TaskCreateSchema,
-        cur_user: str = Depends(get_user_from_token)
+        cur_user: str = Depends(get_user_from_token),
+        users_service: UsersService = Depends(get_users_service),
+        task_service: TasksService = Depends(get_task_service)
 ):
-    user = await get_user_from_db(cur_user)
+    user = await users_service.get_user(cur_user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -64,7 +63,8 @@ async def add_task(
             headers={'WWW-Authenticate': 'Bearer'}
         )
     else:
-        return await insert_task_db(user.user_id, data)
+        await task_service.insert_task(user.user_id, data)
+        return {'message': 'Task successfully added.'}
 
 
 @tasks_route.put(
