@@ -21,14 +21,16 @@ async def get_task_service(uow: IUnitOfWork = Depends(UnitOfWork)) -> TasksServi
 
 
 @tasks_route.get(
-    '/{task_id}',
-    response_model=Any[TaskResponse | None, HTTPException]
+    '/get_task/{task_id}',
+    response_model=TaskResponse
 )
 async def get_task_by_id(
         task_id: int,
-        cur_user: str = Depends(get_user_from_token)
+        cur_user: str = Depends(get_user_from_token),
+        users_service: UsersService = Depends(get_users_service),
+        task_service: TasksService = Depends(get_task_service)
 ):
-    user = await get_user_from_db(cur_user)
+    user = await users_service.get_user(cur_user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -36,7 +38,14 @@ async def get_task_by_id(
             headers={'WWW-Authenticate': 'Bearer'}
         )
     else:
-        return await get_task_db(task_id)
+        task_return = await task_service.get_task(task_id)
+        if task_return:
+            return task_return
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail='Task not found.'
+            )
 
 
 @tasks_route.post(
