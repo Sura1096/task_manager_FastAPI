@@ -1,10 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from typing import Annotated, Any
+
+from typing import Annotated
 
 from app.api.schemas.user import UserSchema, UserResponse
+
 from app.core.security import get_token_by_username
-from app.api.endpoints.users_methods import get_user_from_db, insert_user_db
+
+from app.services.task_manager_service import UsersService
+
+from app.utils.unitofwork import IUnitOfWork, UnitOfWork
 
 
 auth_user_route = APIRouter(
